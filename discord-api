@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Discord API v10 - Quick Reference</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7fb;--card:#fff;--tx:#1d2030;--mu:#5d6479;--bd:#dfe2ec;--ac:#5865f2;--code:#12141f;--codetx:#e6e8f5;
+--get:#1a9f5b;--post:#b7791f;--put:#2b6cb0;--patch:#8a4fd0;--del:#d1344b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f111a;--card:#181b28;--tx:#e8eaf6;--mu:#9aa1bb;--bd:#2a2e42;--code:#0a0c14}}
+:root[data-theme="dark"]{--bg:#0f111a;--card:#181b28;--tx:#e8eaf6;--mu:#9aa1bb;--bd:#2a2e42;--code:#0a0c14}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:26px;margin:8px 0 4px}h2{font-size:18px;margin:28px 0 10px}
+p.sub{color:var(--mu);margin:0 0 14px}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.pill{display:inline-block;background:var(--ac);color:#fff;border-radius:99px;padding:1px 10px;font-size:12px;margin-right:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.grid .card{margin:0}.grid b{display:block;margin-bottom:2px}
+input[type=search]{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;padding:4px 12px;cursor:pointer;font-size:13px}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.ep{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.ep>button{all:unset;display:flex;gap:10px;align-items:center;width:100%;padding:11px 14px;cursor:pointer;box-sizing:border-box}
+.m{font:700 11px ui-monospace,monospace;color:#fff;border-radius:5px;padding:3px 7px;min-width:52px;text-align:center}
+.GET{background:var(--get)}.POST{background:var(--post)}.PUT{background:var(--put)}.PATCH{background:var(--patch)}.DELETE{background:var(--del)}
+.path{font:13px ui-monospace,monospace;word-break:break-all;flex:1}
+.desc{color:var(--mu);font-size:13px;display:none}
+@media(min-width:640px){.desc{display:block}}
+.body{display:none;padding:0 14px 14px;border-top:1px solid var(--bd)}
+.ep.open .body{display:block}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--bd);vertical-align:top}
+.scroll{overflow-x:auto}
+.tabs{display:flex;gap:4px;margin-top:10px}
+.tab{border:0;background:var(--bd);color:var(--tx);padding:4px 12px;border-radius:6px 6px 0 0;cursor:pointer;font-size:12px}
+.tab.on{background:var(--code);color:var(--codetx)}
+pre{margin:0;background:var(--code);color:var(--codetx);padding:12px;border-radius:0 8px 8px 8px;overflow-x:auto;position:relative}
+.copy{float:right;border:1px solid #444;background:transparent;color:var(--codetx);border-radius:5px;font-size:11px;padding:2px 8px;cursor:pointer}
+label.ck{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+label.ck:last-child{border:0}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;margin:6px 0 10px}
+.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width .2s}
+.none{color:var(--mu);text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<main>
+<h1>Discord API v10</h1>
+<p class="sub">Quick reference for the REST API. Base URL: <code>https://discord.com/api/v10</code></p>
+
+<h2>Essentials</h2>
+<div class="grid">
+<div class="card"><b>Auth</b>Bot apps send <code>Authorization: Bot &lt;token&gt;</code>. User OAuth2 apps send <code>Bearer &lt;access_token&gt;</code>.</div>
+<div class="card"><b>Format</b>JSON bodies with <code>Content-Type: application/json</code>. IDs are snowflake strings. Send a <code>User-Agent</code> header.</div>
+<div class="card"><b>Rate limits</b>Global limit is 50 requests/second per app, plus per-route buckets. On <code>429</code>, wait <code>retry_after</code> seconds. Read <code>X-RateLimit-*</code> headers.</div>
+<div class="card"><b>Errors</b>Responses carry an HTTP status and JSON <code>{code, message, errors}</code>. <code>401</code> bad token, <code>403</code> missing permission, <code>404</code> unknown resource.</div>
+</div>
+
+<h2>Getting started checklist</h2>
+<div class="card">
+<div id="pct" style="font-size:13px;color:var(--mu)">0 of 6 done</div><div class="bar"><i id="fill"></i></div>
+<div id="ck"></div>
+</div>
+
+<h2>Endpoints</h2>
+<input type="search" id="q" placeholder="Search endpoints, e.g. message, guild, webhook..." aria-label="Search endpoints">
+<div class="chips" id="chips"></div>
+<div id="list"></div>
+
+<h2>Building a bot</h2>
+<div class="card">
+<p style="margin-top:0"><a href="https://discord.com/developers/applications" target="_blank" rel="noopener"><b>Open the Developer Portal -></b></a> &nbsp;|&nbsp; <a href="https://discord.com/developers/docs" target="_blank" rel="noopener">Full docs</a></p>
+<p><b>1. Create the app.</b> In the portal choose <i>New Application</i>. Note the <b>Application ID</b> (General Information) and, for HTTP interactions, the <b>Public Key</b>.</p>
+<p><b>2. Get the token.</b> <i>Bot</i> tab -> <i>Reset Token</i> -> copy it once. Store it in an environment variable. If it leaks, reset it immediately; old tokens stop working at once.</p>
+<p><b>3. Choose intents.</b> On the same tab, toggle <i>Presence</i>, <i>Server Members</i> and <i>Message Content</i> only if you need them. Slash-command-only bots need none of them.</p>
+<p><b>4. Install the bot.</b> <i>Installation</i> or <i>OAuth2 -> URL Generator</i>: pick scopes <code>bot</code> and <code>applications.commands</code> and the permissions you need. The URL looks like <code>https://discord.com/oauth2/authorize?client_id=APP_ID&amp;scope=bot%20applications.commands&amp;permissions=2048</code>. Request the minimum permissions.</p>
+<p><b>5. Run it.</b> Either keep a Gateway connection open (a library handles this) or use an <b>Interactions Endpoint URL</b> (HTTP webhooks, no persistent connection, slash commands and components only).</p>
+<p style="margin-bottom:0"><b>6. Grow.</b> Bots in roughly 75-100 servers need Discord verification, and privileged intents require approval at that point. Shard when the gateway tells you to (<code>/gateway/bot</code>).</p></div>
+
+<div class="card"><b>Minimal bot with a slash command</b>
+<div class="tabs"><button class="tab on" onclick="bt(0,this)">discord.js</button><button class="tab" onclick="bt(1,this)">discord.py</button></div>
+<pre id="botcode"></pre></div>
+
+<h3 style="margin:18px 0 6px">Slash commands and interactions</h3>
+<div class="card"><div class="scroll"><table><tr><th>Option type</th><th>Value</th><th>Option type</th><th>Value</th></tr>
+<tr><td>SUB_COMMAND / GROUP</td><td>1 / 2</td><td>CHANNEL</td><td>7</td></tr>
+<tr><td>STRING</td><td>3</td><td>ROLE / MENTIONABLE</td><td>8 / 9</td></tr>
+<tr><td>INTEGER</td><td>4</td><td>NUMBER (float)</td><td>10</td></tr>
+<tr><td>BOOLEAN</td><td>5</td><td>ATTACHMENT</td><td>11</td></tr>
+<tr><td>USER</td><td>6</td><td colspan="2">Command types: 1 slash, 2 user menu, 3 message menu</td></tr></table></div>
+<p>An incoming interaction has <code>type</code>: 1 PING, 2 command, 3 component, 4 autocomplete, 5 modal submit. You must answer within <b>3 seconds</b>, then you have <b>15 minutes</b> of follow-ups using the interaction token.</p>
+<div class="scroll"><table><tr><th>Callback type</th><th>Use</th></tr>
+<tr><td>4</td><td>Reply with a message</td></tr>
+<tr><td>5</td><td>Defer ("thinking..."), then edit <code>@original</code> later</td></tr>
+<tr><td>6 / 7</td><td>Defer / update the message a component was on</td></tr>
+<tr><td>8</td><td>Autocomplete choices (max 25)</td></tr>
+<tr><td>9</td><td>Open a modal</td></tr></table></div>
+<p>Set <code>flags: 64</code> for an ephemeral reply only the invoker sees. Guild commands update instantly; global commands can take time to propagate, so use a test guild while developing.</p></div>
+
+<h3 style="margin:18px 0 6px">Embeds and components</h3>
+<div class="card"><pre style="border-radius:8px"><code>{ "content": "Pick one",
+  "embeds": [{ "title": "Status", "description": "All systems normal", "color": 5793266,
+    "fields": [{ "name": "Uptime", "value": "99.9%", "inline": true }],
+    "footer": { "text": "Updated" }, "timestamp": "2026-10-05T12:00:00Z" }],
+  "components": [{ "type": 1, "components": [
+    { "type": 2, "style": 1, "label": "Confirm", "custom_id": "confirm" },
+    { "type": 2, "style": 5, "label": "Docs", "url": "https://discord.com/developers/docs" } ] }] }</code></pre>
+<p><b>Limits:</b> content 2000 chars; up to 10 embeds per message and 6000 combined embed characters; title 256, description 4096, 25 fields, field name 256, field value 1024, footer 2048. An action row (type 1) holds up to 5 buttons or one select menu, and a message holds up to 5 rows.</p>
+<p><b>Component types:</b> 2 button, 3 string select, 4 text input (modals), 5 user select, 6 role select, 7 mentionable select, 8 channel select. <b>Button styles:</b> 1 primary, 2 secondary, 3 success, 4 danger, 5 link (needs <code>url</code>, sends no interaction). <code>custom_id</code> can be up to 100 characters; use it to route the interaction back to your code.</p></div>
+
+<h3 style="margin:18px 0 6px">HTTP interactions (no gateway)</h3>
+<div class="card"><p style="margin-top:0">Set the Interactions Endpoint URL in the portal. Discord sends a signed POST for every interaction. You <b>must</b> verify the Ed25519 signature using the app's public key over <code>timestamp + rawBody</code> (headers <code>X-Signature-Ed25519</code> and <code>X-Signature-Timestamp</code>) and return <code>401</code> if it fails; Discord tests this. Reply to <code>{"type":1}</code> pings with <code>{"type":1}</code>, and to commands with a callback such as <code>{"type":4,"data":{"content":"pong"}}</code>.</p></div>
+
+<h3 style="margin:18px 0 6px">Best practices and gotchas</h3>
+<div class="card"><ul style="margin:0;padding-left:20px">
+<li>Never put the token in client-side code, logs, screenshots or git. Use a secrets manager.</li>
+<li>Prefer slash commands over reading message content; they need no privileged intent.</li>
+<li>Cache with the gateway instead of polling REST; respect rate limit headers and queue requests per bucket.</li>
+<li>Defer long tasks (type 5) so you don't miss the 3-second window.</li>
+<li>Check <code>permissions</code> before acting, and handle <code>50013</code> gracefully. A bot's role must sit above any role it manages.</li>
+<li>Mentions: set <code>allowed_mentions</code> to stop user input from pinging <code>@everyone</code>.</li>
+<li>Snowflakes are 64-bit: always treat IDs as strings in JSON and JavaScript. Created time = <code>(id &gt;&gt; 22) + 1420070400000</code> ms.</li>
+<li>Back off and retry on <code>5xx</code>; don't retry <code>4xx</code> except <code>429</code>.</li></ul></div>
+
+<h2>Advanced features</h2>
+<p class="sub">Endpoints for these live in the list above (filter by Forums, Stage, Voice, Scheduled Events, AutoMod, Audit Log, Emoji).</p>
+
+<h3 style="margin:14px 0 6px">Channel types</h3>
+<div class="card"><div class="scroll"><table><tr><th>Type</th><th>Name</th><th>Type</th><th>Name</th></tr>
+<tr><td>0</td><td>Text</td><td>11 / 12</td><td>Public / private thread</td></tr>
+<tr><td>1</td><td>DM</td><td>10</td><td>Announcement thread</td></tr>
+<tr><td>2</td><td>Voice</td><td>13</td><td>Stage</td></tr>
+<tr><td>4</td><td>Category</td><td>15</td><td>Forum</td></tr>
+<tr><td>5</td><td>Announcement</td><td>16</td><td>Media</td></tr></table></div></div>
+
+<h3 style="margin:14px 0 6px">Forum channels</h3>
+<div class="card"><p style="margin:0">A forum channel (type 15) holds posts, and each post is a thread. Create a post with <code>POST /channels/{forum.id}/threads</code> and include a <code>message</code>. Configure the forum with <code>available_tags</code> (up to 20, each with <code>name</code> and optional emoji), <code>default_sort_order</code> (0 latest activity, 1 creation date), <code>default_forum_layout</code> (1 list, 2 gallery) and <code>default_reaction_emoji</code>. Flag <code>1&lt;&lt;4</code> (REQUIRE_TAG) forces posts to carry a tag. Threads auto-archive after 60, 1440, 4320 or 10080 minutes of inactivity; archived threads reopen when someone posts. Bots need <code>CREATE_PUBLIC_THREADS</code> and <code>SEND_MESSAGES_IN_THREADS</code>. Listen for <code>THREAD_CREATE</code> and <code>THREAD_UPDATE</code>.</p></div>
+
+<h3 style="margin:14px 0 6px">Stage channels</h3>
+<div class="card"><p style="margin:0">A Stage (type 13) has speakers and an audience. Start one with <code>POST /stage-instances</code> (the bot needs <code>MANAGE_CHANNELS</code>, <code>MUTE_MEMBERS</code> and <code>MOVE_MEMBERS</code>) and end it with <code>DELETE /stage-instances/{channel.id}</code>. Audience members are "suppressed" until promoted: the bot edits a member with <code>PATCH /guilds/{guild.id}/voice-states/{user.id}</code> and <code>{"channel_id": "...", "suppress": false}</code>. A user raises a hand via <code>request_to_speak_timestamp</code>. Events: <code>STAGE_INSTANCE_CREATE/UPDATE/DELETE</code>.</p></div>
+
+<h3 style="margin:14px 0 6px">Voice</h3>
+<div class="card"><p style="margin-top:0">Voice runs on a <b>separate WebSocket and UDP</b> connection, so most developers should use a library that supports voice (discord.js with <code>@discordjs/voice</code>, discord.py with voice extras, or Lavalink). Requires the <code>GUILD_VOICE_STATES</code> intent and <code>CONNECT</code> / <code>SPEAK</code> permissions. The flow:</p>
+<ol style="margin:0 0 8px;padding-left:20px"><li>Send gateway <b>op 4</b> (Voice State Update) with <code>guild_id</code> and <code>channel_id</code> (null leaves).</li>
+<li>Receive <code>VOICE_STATE_UPDATE</code> (gives <code>session_id</code>) and <code>VOICE_SERVER_UPDATE</code> (gives <code>token</code> and <code>endpoint</code>).</li>
+<li>Open <code>wss://ENDPOINT?v=8</code>, send <b>Identify</b> (<code>server_id</code>, <code>user_id</code>, <code>session_id</code>, <code>token</code>), receive <b>Ready</b> (<code>ssrc</code>, <code>ip</code>, <code>port</code>, supported <code>modes</code>) and keep heartbeating.</li>
+<li>Do UDP IP discovery, send <b>Select Protocol</b>, and receive <b>Session Description</b> with the <code>secret_key</code>.</li>
+<li>Send Opus audio in RTP packets over UDP, encrypted with an AEAD mode such as <code>aead_aes256_gcm_rtpsize</code> or <code>aead_xchacha20_poly1305_rtpsize</code>, and set Speaking (op 5) when transmitting.</li></ol>
+<p style="margin-bottom:0">Discord has been rolling out end-to-end encryption (DAVE) for voice, so use an up-to-date library rather than implementing the protocol yourself, and check the voice docs for current requirements. Audio is 48 kHz stereo Opus in 20 ms frames.</p></div>
+
+<h3 style="margin:14px 0 6px">Modals</h3>
+<div class="card"><p style="margin-top:0">Open a modal by responding to a command or component interaction with callback type <b>9</b>. You cannot open one from a modal submit or an autocomplete.</p>
+<pre style="border-radius:8px"><code>{ "type": 9, "data": { "custom_id": "feedback", "title": "Send feedback",
+  "components": [ { "type": 1, "components": [
+    { "type": 4, "custom_id": "msg", "style": 2, "label": "Your message",
+      "min_length": 10, "max_length": 1000, "required": true, "placeholder": "Tell us more" } ] } ] } }</code></pre>
+<p>Limits: title up to 45 chars, up to 5 rows, one text input per row, label up to 45, <code>max_length</code> up to 4000, placeholder up to 100. Style 1 is a short single line, style 2 a paragraph. The submit arrives as interaction type <b>5</b>; read values from <code>data.components[].components[]</code> as <code>{custom_id, value}</code> and reply within 3 seconds like any interaction. Discord has been adding newer modal layouts (a Label wrapper that can hold select menus, plus file upload, radio and checkbox fields), so check the components reference for the current shapes.</p></div>
+
+<h3 style="margin:14px 0 6px">Scheduled events</h3>
+<div class="card"><p style="margin:0">Entity types: <b>1</b> stage, <b>2</b> voice, <b>3</b> external. Stage and voice events need <code>channel_id</code>; external events need <code>entity_metadata.location</code> and a <code>scheduled_end_time</code>. Status moves one way: 1 scheduled -> 2 active -> 3 completed, or 4 canceled from scheduled. Needs <code>MANAGE_EVENTS</code> (and channel permissions for stage and voice). Gateway: <code>GUILD_SCHEDULED_EVENT_CREATE/UPDATE/DELETE</code> and <code>_USER_ADD/REMOVE</code> under the <code>GUILD_SCHEDULED_EVENTS</code> intent.</p></div>
+
+<h3 style="margin:14px 0 6px">AutoMod</h3>
+<div class="card"><div class="scroll"><table><tr><th>Trigger</th><th>Value</th><th>Metadata</th></tr>
+<tr><td>KEYWORD</td><td>1</td><td><code>keyword_filter</code> (wildcards <code>*word*</code>), <code>regex_patterns</code>, <code>allow_list</code></td></tr>
+<tr><td>SPAM</td><td>3</td><td>None</td></tr>
+<tr><td>KEYWORD_PRESET</td><td>4</td><td><code>presets</code>: 1 profanity, 2 sexual content, 3 slurs</td></tr>
+<tr><td>MENTION_SPAM</td><td>5</td><td><code>mention_total_limit</code> (max 50)</td></tr>
+<tr><td>MEMBER_PROFILE</td><td>6</td><td>Keyword filters applied to profiles</td></tr></table></div>
+<p style="margin-bottom:0">Actions: <b>1</b> block message (optional <code>custom_message</code>), <b>2</b> send alert to <code>channel_id</code>, <b>3</b> timeout for <code>duration_seconds</code> (max 4 weeks; not for non-message triggers). Managing rules needs <code>MANAGE_GUILD</code>. Each guild has limits per trigger type, such as a handful of keyword rules. Listen for <code>AUTO_MODERATION_ACTION_EXECUTION</code> via the <code>AUTO_MODERATION_EXECUTION</code> intent; reading <code>content</code> in it needs the Message Content intent.</p></div>
+
+<h3 style="margin:14px 0 6px">Audit log</h3>
+<div class="card"><p style="margin:0">Records admin actions for 45 days. Each entry has <code>user_id</code> (who), <code>target_id</code>, <code>action_type</code>, <code>changes</code> (old and new values), and an optional <code>reason</code>. Common types: 1 guild update, 10 channel create, 12 channel delete, 20 member kick, 22 ban add, 23 ban remove, 24 member update, 25 member role update, 72 message delete, 73 bulk delete. You can attach your own reason to most moderation calls with the <code>X-Audit-Log-Reason</code> header (URL-encoded). Realtime: <code>GUILD_AUDIT_LOG_ENTRY_CREATE</code> under the <code>GUILD_MODERATION</code> intent.</p></div>
+
+<h3 style="margin:14px 0 6px">Emoji and stickers</h3>
+<div class="card"><p style="margin:0">Send a custom emoji in message text as <code>&lt;:name:id&gt;</code> (or <code>&lt;a:name:id&gt;</code> if animated); use <code>name:id</code> (URL-encoded) in reaction routes. Emoji images are PNG, JPEG or GIF up to 256 KiB and sent as a base64 data URI; names are 2-32 characters. Stickers are PNG, APNG, GIF or Lottie JSON up to 512 KB (320x320 recommended), created with <code>multipart/form-data</code> fields <code>name</code>, <code>description</code>, <code>tags</code> and <code>file</code>. Send stickers by passing up to 3 IDs in <code>sticker_ids</code> on a message. Both need <code>MANAGE_GUILD_EXPRESSIONS</code>; the number you can add depends on the server's boost level. Events: <code>GUILD_EMOJIS_UPDATE</code>, <code>GUILD_STICKERS_UPDATE</code> (<code>GUILD_EXPRESSIONS</code> intent).</p></div>
+
+<h2>Rate limits in detail</h2>
+<div class="card"><div class="scroll"><table><tr><th>Header</th><th>Meaning</th></tr>
+<tr><td><code>X-RateLimit-Limit</code></td><td>Requests allowed in the bucket</td></tr>
+<tr><td><code>X-RateLimit-Remaining</code></td><td>Requests left before the reset</td></tr>
+<tr><td><code>X-RateLimit-Reset-After</code></td><td>Seconds (float) until the bucket resets</td></tr>
+<tr><td><code>X-RateLimit-Bucket</code></td><td>Bucket ID; routes can share one</td></tr>
+<tr><td><code>X-RateLimit-Scope</code></td><td><code>user</code>, <code>global</code> or <code>shared</code></td></tr></table></div>
+<p>A <code>429</code> body is <code>{"message","retry_after","global"}</code>. Buckets are keyed by route plus the top-level resource (channel, guild or webhook ID). Also avoid sending lots of invalid requests (401, 403, 429): about 10,000 in 10 minutes can get your IP temporarily blocked.</p></div>
+
+<h2>Common errors</h2>
+<div class="card"><div class="scroll"><table><tr><th>Code</th><th>Meaning</th></tr>
+<tr><td>10003 / 10004 / 10008 / 10013</td><td>Unknown channel / guild / message / user</td></tr>
+<tr><td>30001</td><td>Maximum guilds reached</td></tr>
+<tr><td>40060</td><td>Interaction already acknowledged</td></tr>
+<tr><td>50001</td><td>Missing access (bot can't see the resource)</td></tr>
+<tr><td>50013</td><td>Missing permissions (role or channel overwrites)</td></tr>
+<tr><td>50035</td><td>Invalid form body; <code>errors</code> pinpoints the bad field</td></tr></table></div>
+<p>HTTP statuses: <code>200/201/204</code> success, <code>400</code> bad payload, <code>401</code> bad token, <code>403</code> forbidden, <code>404</code> not found, <code>429</code> rate limited, <code>5xx</code> retry with backoff.</p></div>
+
+<h2>Permissions</h2>
+<div class="card"><p style="margin-top:0">Permissions are a bitfield sent as a string. Combine with bitwise OR, and check channel overwrites after role permissions. <code>ADMINISTRATOR</code> bypasses everything.</p>
+<div class="scroll"><table><tr><th>Permission</th><th>Bit</th><th>Permission</th><th>Bit</th></tr>
+<tr><td>KICK_MEMBERS</td><td>1&lt;&lt;1</td><td>SEND_MESSAGES</td><td>1&lt;&lt;11</td></tr>
+<tr><td>BAN_MEMBERS</td><td>1&lt;&lt;2</td><td>MANAGE_MESSAGES</td><td>1&lt;&lt;13</td></tr>
+<tr><td>ADMINISTRATOR</td><td>1&lt;&lt;3</td><td>EMBED_LINKS / ATTACH_FILES</td><td>1&lt;&lt;14 / 1&lt;&lt;15</td></tr>
+<tr><td>MANAGE_CHANNELS</td><td>1&lt;&lt;4</td><td>READ_MESSAGE_HISTORY</td><td>1&lt;&lt;16</td></tr>
+<tr><td>MANAGE_GUILD</td><td>1&lt;&lt;5</td><td>MANAGE_ROLES</td><td>1&lt;&lt;28</td></tr>
+<tr><td>ADD_REACTIONS</td><td>1&lt;&lt;6</td><td>MANAGE_WEBHOOKS</td><td>1&lt;&lt;29</td></tr>
+<tr><td>VIEW_CHANNEL</td><td>1&lt;&lt;10</td><td>MODERATE_MEMBERS (timeout)</td><td>1&lt;&lt;40</td></tr></table></div></div>
+
+<h2>OAuth2</h2>
+<div class="card">
+<p style="margin-top:0"><b>Authorization code flow.</b> 1) Send the user to <code>https://discord.com/oauth2/authorize?client_id=ID&amp;response_type=code&amp;redirect_uri=URI&amp;scope=identify%20guilds&amp;state=RANDOM</code>. 2) Discord redirects back with <code>code</code> and <code>state</code>; verify <code>state</code>. 3) Exchange the code (form-encoded, not JSON):</p>
+<pre style="border-radius:8px"><code>curl -X POST https://discord.com/api/oauth2/token \
+  -u "CLIENT_ID:CLIENT_SECRET" \
+  -d grant_type=authorization_code \
+  -d code=CODE \
+  -d redirect_uri=URI
+# -> { "access_token", "token_type": "Bearer", "expires_in": 604800, "refresh_token", "scope" }</code></pre>
+<p>Refresh with <code>grant_type=refresh_token&amp;refresh_token=...</code>. Revoke at <code>POST /oauth2/token/revoke</code>. Call <code>GET /oauth2/@me</code> to see the token's scopes. To add a bot, use scopes <code>bot applications.commands</code> plus <code>&amp;permissions=BITFIELD</code>.</p>
+<div class="scroll"><table><tr><th>Scope</th><th>Grants</th></tr>
+<tr><td>identify / email</td><td>User profile / email address</td></tr>
+<tr><td>guilds / guilds.members.read</td><td>Guild list / the user's member object in a guild</td></tr>
+<tr><td>guilds.join</td><td>Add the user to a guild (bot token required)</td></tr>
+<tr><td>bot / applications.commands</td><td>Install the bot / register slash commands</td></tr>
+<tr><td>webhook.incoming</td><td>Create a webhook in a channel the user picks</td></tr></table></div></div>
+
+<h2>Gateway (WebSocket)</h2>
+<div class="card">
+<p style="margin-top:0">Connect to the URL from <code>GET /gateway/bot</code>, adding <code>?v=10&amp;encoding=json</code>. Flow: receive <b>Hello</b> (op 10) with <code>heartbeat_interval</code>, send a heartbeat after interval x random jitter, then send <b>Identify</b>. Keep heartbeating; if an ACK is missed, reconnect and Resume using <code>session_id</code> and the last sequence <code>s</code>.</p>
+<pre style="border-radius:8px"><code>{ "op": 2, "d": {
+  "token": "BOT_TOKEN",
+  "intents": 33281,
+  "properties": { "os": "linux", "browser": "mylib", "device": "mylib" }
+} }</code></pre>
+<div class="scroll"><table><tr><th>Op</th><th>Name</th><th>Direction</th></tr>
+<tr><td>0</td><td>Dispatch (events)</td><td>Receive</td></tr>
+<tr><td>1</td><td>Heartbeat</td><td>Both</td></tr>
+<tr><td>2 / 6</td><td>Identify / Resume</td><td>Send</td></tr>
+<tr><td>3 / 4 / 8</td><td>Presence / Voice state / Request guild members</td><td>Send</td></tr>
+<tr><td>7</td><td>Reconnect</td><td>Receive</td></tr>
+<tr><td>9</td><td>Invalid session (<code>d</code> says if resumable)</td><td>Receive</td></tr>
+<tr><td>10 / 11</td><td>Hello / Heartbeat ACK</td><td>Receive</td></tr></table></div>
+<p><b>Intents</b> choose which events you get. Privileged ones must be enabled in the Developer Portal.</p>
+<div class="scroll"><table><tr><th>Intent</th><th>Bit</th><th>Intent</th><th>Bit</th></tr>
+<tr><td>GUILDS</td><td>1&lt;&lt;0</td><td>GUILD_MESSAGES</td><td>1&lt;&lt;9</td></tr>
+<tr><td>GUILD_MEMBERS (privileged)</td><td>1&lt;&lt;1</td><td>GUILD_MESSAGE_REACTIONS</td><td>1&lt;&lt;10</td></tr>
+<tr><td>GUILD_MODERATION</td><td>1&lt;&lt;2</td><td>DIRECT_MESSAGES</td><td>1&lt;&lt;12</td></tr>
+<tr><td>GUILD_WEBHOOKS</td><td>1&lt;&lt;5</td><td>MESSAGE_CONTENT (privileged)</td><td>1&lt;&lt;15</td></tr>
+<tr><td>GUILD_VOICE_STATES</td><td>1&lt;&lt;7</td><td>GUILD_SCHEDULED_EVENTS</td><td>1&lt;&lt;16</td></tr>
+<tr><td>GUILD_PRESENCES (privileged)</td><td>1&lt;&lt;8</td><td>AUTO_MODERATION_EXECUTION</td><td>1&lt;&lt;21</td></tr></table></div>
+<p>Key events: <code>READY</code>, <code>GUILD_CREATE</code>, <code>MESSAGE_CREATE</code>, <code>MESSAGE_UPDATE</code>, <code>MESSAGE_DELETE</code>, <code>GUILD_MEMBER_ADD</code>, <code>INTERACTION_CREATE</code>. Without <code>MESSAGE_CONTENT</code>, bots only see message text in DMs, mentions, and their own messages. Large bots must shard: guild ID &gt;&gt; 22 mod shard count.</p></div>
+
+<h2>Resources</h2>
+<div class="card"><ul style="margin:0;padding-left:20px">
+<li><a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Developer Portal</a>: create apps, get tokens, set intents and the interactions URL</li>
+<li><a href="https://discord.com/developers/docs" target="_blank" rel="noopener">Official API documentation</a></li>
+<li><a href="https://github.com/discord/discord-api-spec" target="_blank" rel="noopener">OpenAPI spec</a>: generate a typed client in your language</li>
+<li><a href="https://discord.js.org" target="_blank" rel="noopener">discord.js</a> and <a href="https://discordpy.readthedocs.io" target="_blank" rel="noopener">discord.py</a>: popular bot libraries</li></ul></div>
+</main>
+
+<script>
+const BASE="https://discord.com/api/v10";
+const E=[
+{g:"Users",m:"GET",p:"/users/@me",d:"Get the current user",pm:[],body:null,res:'{\n  "id": "80351110224678912",\n  "username": "nelly",\n  "global_name": "Nelly",\n  "bot": true\n}'},
+{g:"Users",m:"GET",p:"/users/{user.id}",d:"Get a user by ID",pm:[["user.id","snowflake","path","User ID"]],body:null,res:'{\n  "id": "80351110224678912",\n  "username": "nelly",\n  "avatar": "8342729096ea3675442027381ff50dfe"\n}'},
+{g:"Users",m:"POST",p:"/users/@me/channels",d:"Create a DM channel",pm:[["recipient_id","snowflake","body","User to DM"]],body:{recipient_id:"80351110224678912"},res:'{\n  "id": "319674150115610528",\n  "type": 1\n}'},
+{g:"Channels",m:"GET",p:"/channels/{channel.id}",d:"Get a channel",pm:[["channel.id","snowflake","path","Channel ID"]],body:null,res:'{\n  "id": "41771983423143937",\n  "type": 0,\n  "name": "general",\n  "guild_id": "41771983423143937"\n}'},
+{g:"Channels",m:"PATCH",p:"/channels/{channel.id}",d:"Modify a channel",pm:[["channel.id","snowflake","path","Channel ID"],["name","string","body","2-100 characters"],["topic","string","body","Up to 1024 characters"]],body:{name:"announcements",topic:"News only"},res:'{ "id": "41771983423143937", "name": "announcements" }'},
+{g:"Channels",m:"DELETE",p:"/channels/{channel.id}",d:"Delete or close a channel",pm:[["channel.id","snowflake","path","Channel ID"]],body:null,res:"// Returns the deleted channel object"},
+{g:"Messages",m:"GET",p:"/channels/{channel.id}/messages",d:"List messages (newest first)",pm:[["channel.id","snowflake","path","Channel ID"],["limit","int","query","1-100, default 50"],["before","snowflake","query","Messages before this ID"]],body:null,res:'[\n  { "id": "334385199974967042", "content": "Supa Hot", "author": { "id": "53908232506183680" } }\n]'},
+{g:"Messages",m:"POST",p:"/channels/{channel.id}/messages",d:"Send a message",pm:[["channel.id","snowflake","path","Channel ID"],["content","string","body","Up to 2000 characters"],["embeds","array","body","Up to 10 embed objects"],["tts","bool","body","Text-to-speech"]],body:{content:"Hello, world!"},res:'{\n  "id": "334385199974967042",\n  "channel_id": "41771983423143937",\n  "content": "Hello, world!"\n}'},
+{g:"Messages",m:"PATCH",p:"/channels/{channel.id}/messages/{message.id}",d:"Edit a message you sent",pm:[["channel.id","snowflake","path","Channel ID"],["message.id","snowflake","path","Message ID"],["content","string","body","New content"]],body:{content:"Edited!"},res:'{ "id": "334385199974967042", "content": "Edited!" }'},
+{g:"Messages",m:"DELETE",p:"/channels/{channel.id}/messages/{message.id}",d:"Delete a message",pm:[["channel.id","snowflake","path","Channel ID"],["message.id","snowflake","path","Message ID"]],body:null,res:"// 204 No Content"},
+{g:"Messages",m:"PUT",p:"/channels/{channel.id}/messages/{message.id}/reactions/{emoji}/@me",d:"Add a reaction",pm:[["emoji","string","path","URL-encoded emoji or name:id"]],body:null,res:"// 204 No Content"},
+{g:"Guilds",m:"GET",p:"/guilds/{guild.id}",d:"Get a guild (server)",pm:[["guild.id","snowflake","path","Guild ID"],["with_counts","bool","query","Include member counts"]],body:null,res:'{\n  "id": "197038439483310086",\n  "name": "Discord Testers",\n  "owner_id": "73193882359173120"\n}'},
+{g:"Guilds",m:"GET",p:"/guilds/{guild.id}/channels",d:"List guild channels",pm:[["guild.id","snowflake","path","Guild ID"]],body:null,res:'[ { "id": "41771983423143937", "name": "general", "type": 0 } ]'},
+{g:"Guilds",m:"GET",p:"/guilds/{guild.id}/members/{user.id}",d:"Get a guild member",pm:[["guild.id","snowflake","path","Guild ID"],["user.id","snowflake","path","User ID"]],body:null,res:'{\n  "user": { "id": "80351110224678912" },\n  "nick": "NOT API SUPPORT",\n  "roles": []\n}'},
+{g:"Guilds",m:"PUT",p:"/guilds/{guild.id}/bans/{user.id}",d:"Ban a user",pm:[["guild.id","snowflake","path","Guild ID"],["user.id","snowflake","path","User ID"],["delete_message_seconds","int","body","0-604800"]],body:{delete_message_seconds:3600},res:"// 204 No Content (requires BAN_MEMBERS)"},
+{g:"Commands",m:"PUT",p:"/applications/{application.id}/commands",d:"Bulk overwrite global slash commands",pm:[["application.id","snowflake","path","Application ID"],["[]","array","body","Array of command objects"]],body:[{name:"ping",description:"Replies with pong",type:1}],res:'[ { "id": "771091", "name": "ping", "type": 1 } ]'},
+{g:"Commands",m:"POST",p:"/interactions/{interaction.id}/{interaction.token}/callback",d:"Respond to an interaction",pm:[["type","int","body","4 = message, 5 = deferred"],["data","object","body","Message data"]],body:{type:4,data:{content:"pong"}},res:"// 204 No Content (respond within 3 seconds)"},
+{g:"Webhooks",m:"POST",p:"/webhooks/{webhook.id}/{webhook.token}",d:"Execute a webhook (no bot token needed)",pm:[["content","string","body","Message text"],["username","string","body","Override display name"],["wait","bool","query","Return the created message"]],body:{content:"Deploy finished",username:"CI"},res:"// 204 No Content (or message object if wait=true)",noauth:true}
+,
+{g:"Users",m:"GET",p:"/users/@me/guilds",d:"List guilds the current user is in",pm:[["limit","int","query","1-200"],["after","snowflake","query","Pagination cursor"]],body:null,res:'[ { "id": "80351110224678912", "name": "1337 Krew", "owner": true } ]'},
+{g:"Users",m:"DELETE",p:"/users/@me/guilds/{guild.id}",d:"Leave a guild",pm:[["guild.id","snowflake","path","Guild ID"]],body:null,res:"// 204 No Content"},
+{g:"Channels",m:"POST",p:"/channels/{channel.id}/messages/bulk-delete",d:"Bulk delete 2-100 messages younger than 14 days",pm:[["messages","snowflake[]","body","Message IDs"]],body:{messages:["334385199974967042","334385199974967043"]},res:"// 204 No Content (needs MANAGE_MESSAGES)"},
+{g:"Channels",m:"POST",p:"/channels/{channel.id}/invites",d:"Create an invite",pm:[["max_age","int","body","Seconds, 0 = never (default 86400)"],["max_uses","int","body","0-100, 0 = unlimited"],["unique","bool","body","Always make a new code"]],body:{max_age:3600,max_uses:5},res:'{ "code": "0vCdhLbwjZZTWZLD", "channel": { "id": "41771983423143937" } }'},
+{g:"Channels",m:"POST",p:"/channels/{channel.id}/messages/{message.id}/threads",d:"Start a thread from a message",pm:[["name","string","body","1-100 characters"],["auto_archive_duration","int","body","60, 1440, 4320 or 10080 minutes"]],body:{name:"Discussion",auto_archive_duration:1440},res:'{ "id": "6120934", "type": 11, "name": "Discussion" }'},
+{g:"Channels",m:"POST",p:"/channels/{channel.id}/webhooks",d:"Create a webhook",pm:[["name","string","body","1-80 characters"]],body:{name:"CI Notifier"},res:'{ "id": "223704706495545344", "token": "3d89bb7572e0fb30d8128367b3b1b44fecd1726de135cbe28a41f8b2f777c372ba2939e72279b94526ff5d1bd4358d65cf11" }'},
+{g:"Invites",m:"GET",p:"/invites/{code}",d:"Get an invite",pm:[["code","string","path","Invite code"],["with_counts","bool","query","Approximate member counts"]],body:null,res:'{ "code": "0vCdhLbwjZZTWZLD", "guild": { "name": "Discord Testers" } }'},
+{g:"Guilds",m:"POST",p:"/guilds/{guild.id}/channels",d:"Create a channel",pm:[["name","string","body","1-100 characters"],["type","int","body","0 text, 2 voice, 4 category, 5 announcement, 13 stage, 15 forum"],["parent_id","snowflake","body","Category ID"]],body:{name:"dev-chat",type:0},res:'{ "id": "41771983423143999", "name": "dev-chat", "type": 0 }'},
+{g:"Guilds",m:"GET",p:"/guilds/{guild.id}/members",d:"List members (needs GUILD_MEMBERS intent)",pm:[["limit","int","query","1-1000, default 1"],["after","snowflake","query","Highest user ID of previous page"]],body:null,res:'[ { "user": { "id": "80351110224678912" }, "roles": [], "joined_at": "2024-01-01T00:00:00Z" } ]'},
+{g:"Guilds",m:"PATCH",p:"/guilds/{guild.id}/members/{user.id}",d:"Modify a member (nick, roles, timeout)",pm:[["nick","string","body","Nickname"],["roles","snowflake[]","body","Replace roles"],["communication_disabled_until","ISO8601","body","Timeout end (max 28 days); null clears"]],body:{communication_disabled_until:"2026-10-06T12:00:00Z"},res:'{ "user": { "id": "80351110224678912" }, "communication_disabled_until": "2026-10-06T12:00:00+00:00" }'},
+{g:"Guilds",m:"DELETE",p:"/guilds/{guild.id}/members/{user.id}",d:"Kick a member",pm:[["guild.id","snowflake","path","Guild ID"],["user.id","snowflake","path","User ID"]],body:null,res:"// 204 No Content (needs KICK_MEMBERS)"},
+{g:"Guilds",m:"GET",p:"/guilds/{guild.id}/roles",d:"List roles",pm:[["guild.id","snowflake","path","Guild ID"]],body:null,res:'[ { "id": "41771983423143936", "name": "@everyone", "permissions": "6546771529" } ]'},
+{g:"Guilds",m:"POST",p:"/guilds/{guild.id}/roles",d:"Create a role",pm:[["name","string","body","Role name"],["permissions","string","body","Bitfield as string"],["color","int","body","RGB integer"],["hoist","bool","body","Show separately"]],body:{name:"Moderator",permissions:"1099511627776",color:5793266},res:'{ "id": "41771983423143940", "name": "Moderator" }'},
+{g:"Guilds",m:"PUT",p:"/guilds/{guild.id}/members/{user.id}/roles/{role.id}",d:"Add a role to a member",pm:[["role.id","snowflake","path","Role ID"]],body:null,res:"// 204 No Content (needs MANAGE_ROLES)"},
+{g:"Guilds",m:"DELETE",p:"/guilds/{guild.id}/bans/{user.id}",d:"Unban a user",pm:[["user.id","snowflake","path","User ID"]],body:null,res:"// 204 No Content"},
+{g:"Commands",m:"GET",p:"/applications/{application.id}/commands",d:"List global commands",pm:[["with_localizations","bool","query","Include translations"]],body:null,res:'[ { "id": "771091", "name": "ping", "type": 1, "options": [] } ]'},
+{g:"Commands",m:"POST",p:"/applications/{application.id}/guilds/{guild.id}/commands",d:"Create a guild command (updates instantly)",pm:[["name","string","body","1-32 chars, lowercase"],["description","string","body","1-100 chars"],["options","array","body","Up to 25 options"]],body:{name:"echo",description:"Repeat text",options:[{type:3,name:"text",description:"What to say",required:true}]},res:'{ "id": "771092", "name": "echo", "guild_id": "197038439483310086" }'},
+{g:"Commands",m:"POST",p:"/webhooks/{application.id}/{interaction.token}",d:"Send a follow-up message (token valid 15 min)",pm:[["content","string","body","Message text"],["flags","int","body","64 = ephemeral"]],body:{content:"Done!",flags:64},res:'{ "id": "334385199974967050", "content": "Done!" }',noauth:true},
+{g:"Commands",m:"PATCH",p:"/webhooks/{application.id}/{interaction.token}/messages/@original",d:"Edit the original response (after deferring)",pm:[["content","string","body","New content"]],body:{content:"Finished processing."},res:'{ "id": "334385199974967042", "content": "Finished processing." }',noauth:true},
+{g:"Webhooks",m:"PATCH",p:"/webhooks/{webhook.id}/{webhook.token}/messages/{message.id}",d:"Edit a webhook message",pm:[["content","string","body","New content"]],body:{content:"Updated"},res:'{ "id": "334385199974967042", "content": "Updated" }',noauth:true},
+{g:"Webhooks",m:"DELETE",p:"/webhooks/{webhook.id}/{webhook.token}",d:"Delete a webhook",pm:[],body:null,res:"// 204 No Content",noauth:true},
+{g:"Gateway",m:"GET",p:"/gateway/bot",d:"Get the WebSocket URL, shard count and session limits",pm:[],body:null,res:'{\n  "url": "wss://gateway.discord.gg",\n  "shards": 1,\n  "session_start_limit": { "total": 1000, "remaining": 999, "reset_after": 14400000, "max_concurrency": 1 }\n}'}
+,
+{g:"Forums & Threads",m:"POST",p:"/channels/{channel.id}/threads",d:"Start a thread; in a forum channel this creates a post",pm:[["name","string","body","1-100 chars"],["message","object","body","Required in forums: first post (content, embeds...)"],["applied_tags","snowflake[]","body","Forum tag IDs"],["type","int","body","11 public, 12 private (non-forum)"]],body:{name:"Bug: login fails",message:{content:"Steps to reproduce..."},applied_tags:["1234567890"]},res:'{ "id": "6120934", "type": 11, "parent_id": "41771983423143937", "applied_tags": ["1234567890"] }'},
+{g:"Forums & Threads",m:"PUT",p:"/channels/{channel.id}/thread-members/@me",d:"Join a thread",pm:[["channel.id","snowflake","path","Thread ID"]],body:null,res:"// 204 No Content"},
+{g:"Stage",m:"POST",p:"/stage-instances",d:"Start a Stage (needs MANAGE_CHANNELS, MUTE_MEMBERS, MOVE_MEMBERS)",pm:[["channel_id","snowflake","body","Stage channel ID"],["topic","string","body","1-120 chars"],["privacy_level","int","body","2 = guild only"]],body:{channel_id:"41771983423143937",topic:"Community AMA",privacy_level:2},res:'{ "id": "840647391636226060", "channel_id": "41771983423143937", "topic": "Community AMA" }'},
+{g:"Stage",m:"DELETE",p:"/stage-instances/{channel.id}",d:"End a Stage",pm:[["channel.id","snowflake","path","Stage channel ID"]],body:null,res:"// 204 No Content"},
+{g:"Voice",m:"GET",p:"/voice/regions",d:"List voice regions",pm:[],body:null,res:'[ { "id": "europe", "name": "Europe", "optimal": true, "deprecated": false } ]'},
+{g:"Voice",m:"PATCH",p:"/guilds/{guild.id}/members/{user.id}",d:"Move, mute or deafen a member in voice",pm:[["channel_id","snowflake","body","Target voice channel; null disconnects"],["mute","bool","body","Server mute"],["deaf","bool","body","Server deafen"]],body:{channel_id:"41771983423143999"},res:'{ "user": { "id": "80351110224678912" }, "mute": false }'},
+{g:"Scheduled Events",m:"GET",p:"/guilds/{guild.id}/scheduled-events",d:"List scheduled events",pm:[["with_user_count","bool","query","Include interested counts"]],body:null,res:'[ { "id": "9001", "name": "Game night", "status": 1, "entity_type": 2 } ]'},
+{g:"Scheduled Events",m:"POST",p:"/guilds/{guild.id}/scheduled-events",d:"Create an event",pm:[["name","string","body","1-100 chars"],["scheduled_start_time","ISO8601","body","Start time"],["scheduled_end_time","ISO8601","body","Required for external events"],["entity_type","int","body","1 stage, 2 voice, 3 external"],["channel_id","snowflake","body","For stage/voice events"],["entity_metadata","object","body","{location} for external events"],["privacy_level","int","body","2 = guild only"]],body:{name:"Game night",scheduled_start_time:"2026-10-10T19:00:00Z",entity_type:2,channel_id:"41771983423143999",privacy_level:2},res:'{ "id": "9001", "name": "Game night", "status": 1 }'},
+{g:"Scheduled Events",m:"PATCH",p:"/guilds/{guild.id}/scheduled-events/{event.id}",d:"Edit an event or change its status",pm:[["status","int","body","2 active, 3 completed, 4 canceled (scheduled -> active -> completed)"]],body:{status:2},res:'{ "id": "9001", "status": 2 }'},
+{g:"Scheduled Events",m:"GET",p:"/guilds/{guild.id}/scheduled-events/{event.id}/users",d:"List users interested in an event",pm:[["limit","int","query","Up to 100"],["with_member","bool","query","Include member objects"]],body:null,res:'[ { "guild_scheduled_event_id": "9001", "user": { "id": "80351110224678912" } } ]'},
+{g:"Scheduled Events",m:"DELETE",p:"/guilds/{guild.id}/scheduled-events/{event.id}",d:"Delete an event",pm:[],body:null,res:"// 204 No Content"},
+{g:"AutoMod",m:"GET",p:"/guilds/{guild.id}/auto-moderation/rules",d:"List AutoMod rules (needs MANAGE_GUILD)",pm:[],body:null,res:'[ { "id": "969707018069872670", "name": "Block spam links", "trigger_type": 1, "enabled": true } ]'},
+{g:"AutoMod",m:"POST",p:"/guilds/{guild.id}/auto-moderation/rules",d:"Create an AutoMod rule",pm:[["name","string","body","Rule name"],["event_type","int","body","1 = message send"],["trigger_type","int","body","1 keyword, 3 spam, 4 preset, 5 mention spam, 6 member profile"],["trigger_metadata","object","body","keyword_filter, regex_patterns, allow_list, mention_total_limit..."],["actions","array","body","Block, alert or timeout"],["exempt_roles","snowflake[]","body","Up to 20"]],body:{name:"No bad words",event_type:1,trigger_type:1,trigger_metadata:{keyword_filter:["*badword*"]},actions:[{type:1},{type:2,metadata:{channel_id:"41771983423143937"}}],enabled:true},res:'{ "id": "969707018069872670", "name": "No bad words", "enabled": true }'},
+{g:"AutoMod",m:"PATCH",p:"/guilds/{guild.id}/auto-moderation/rules/{rule.id}",d:"Edit a rule",pm:[["enabled","bool","body","Toggle the rule"]],body:{enabled:false},res:'{ "id": "969707018069872670", "enabled": false }'},
+{g:"AutoMod",m:"DELETE",p:"/guilds/{guild.id}/auto-moderation/rules/{rule.id}",d:"Delete a rule",pm:[],body:null,res:"// 204 No Content"},
+{g:"Audit Log",m:"GET",p:"/guilds/{guild.id}/audit-logs",d:"Fetch audit log entries (needs VIEW_AUDIT_LOG)",pm:[["user_id","snowflake","query","Who did it"],["action_type","int","query","Filter by action"],["before","snowflake","query","Entries before this ID"],["limit","int","query","1-100, default 50"]],body:null,res:'{\n  "audit_log_entries": [ { "id": "1", "action_type": 22, "user_id": "73193882359173120", "target_id": "80351110224678912", "reason": "spam" } ],\n  "users": []\n}'},
+{g:"Emoji & Stickers",m:"GET",p:"/guilds/{guild.id}/emojis",d:"List custom emoji",pm:[],body:null,res:'[ { "id": "41771983429993937", "name": "blob", "animated": false } ]'},
+{g:"Emoji & Stickers",m:"POST",p:"/guilds/{guild.id}/emojis",d:"Create an emoji (image max 256 KiB)",pm:[["name","string","body","2-32 chars"],["image","data URI","body","data:image/png;base64,..."],["roles","snowflake[]","body","Roles allowed to use it"]],body:{name:"blob",image:"data:image/png;base64,iVBORw0KGgo..."},res:'{ "id": "41771983429993937", "name": "blob" }'},
+{g:"Emoji & Stickers",m:"DELETE",p:"/guilds/{guild.id}/emojis/{emoji.id}",d:"Delete an emoji",pm:[],body:null,res:"// 204 No Content"},
+{g:"Emoji & Stickers",m:"GET",p:"/guilds/{guild.id}/stickers",d:"List guild stickers (creating one uses multipart/form-data)",pm:[],body:null,res:'[ { "id": "749054660769218631", "name": "wave", "format_type": 1, "tags": "hello" } ]'}
+];
+const groups=["All",...new Set(E.map(e=>e.g))];
+let grp="All",q="";
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function ex(e){
+  const url=BASE+e.p.replace(/\{([^}]+)\}/g,(_,n)=>n.toUpperCase().replace(/\./g,"_"));
+  const hdr=e.noauth?[]:["Authorization: Bot $BOT_TOKEN"];
+  const bj=e.body?JSON.stringify(e.body):null;
+  const curl=`curl -X ${e.m} "${url}" \\\n`+hdr.map(h=>`  -H "${h}" \\\n`).join("")+(bj?`  -H "Content-Type: application/json" \\\n  -d '${bj}'`:`  -H "Accept: application/json"`).replace(/ \\\n$/,"");
+  const js=`const res = await fetch("${url}", {\n  method: "${e.m}",\n  headers: {\n${e.noauth?"":`    "Authorization": \`Bot \${process.env.BOT_TOKEN}\`,\n`}    "Content-Type": "application/json",\n  },${bj?`\n  body: JSON.stringify(${JSON.stringify(e.body)}),`:""}\n});\nif (res.status === 429) {\n  const { retry_after } = await res.json(); // seconds\n}\nconst data = res.status === 204 ? null : await res.json();`;
+  const py=`import os, requests\n\nr = requests.request(\n    "${e.m}",\n    "${url}",\n${e.noauth?"":`    headers={"Authorization": f"Bot {os.environ['BOT_TOKEN']}"},\n`}${bj?`    json=${JSON.stringify(e.body)},\n`:""})\nr.raise_for_status()\nprint(r.json() if r.content else "ok")`;
+  return {curl,js,py};
+}
+function render(){
+  const t=q.toLowerCase();
+  const items=E.filter(e=>(grp==="All"||e.g===grp)&&(e.p+e.d+e.g+e.m).toLowerCase().includes(t));
+  $("#list").innerHTML=items.length?items.map(e=>{
+    const i=E.indexOf(e),x=ex(e);
+    return `<div class="ep" id="ep${i}"><button onclick="tog(${i})" aria-expanded="false"><span class="m ${e.m}">${e.m}</span><span class="path">${esc(e.p)}</span><span class="desc">${esc(e.d)}</span></button>
+<div class="body"><p style="margin:10px 0 0">${esc(e.d)}${e.noauth?" <em>(authenticated by the token in the URL)</em>":""}</p>
+${e.pm.length?`<div class="scroll"><table><tr><th>Name</th><th>Type</th><th>In</th><th>Notes</th></tr>${e.pm.map(r=>`<tr><td><code>${esc(r[0])}</code></td><td>${r[1]}</td><td>${r[2]}</td><td>${esc(r[3])}</td></tr>`).join("")}</table></div>`:""}
+<div class="tabs">${["curl","js","py"].map((k,j)=>`<button class="tab ${j?"":"on"}" onclick="tab(${i},'${k}',this)">${{curl:"curl",js:"JavaScript",py:"Python"}[k]}</button>`).join("")}</div>
+<pre><button class="copy" onclick="cp(${i},this)">Copy</button><code id="code${i}">${esc(x.curl)}</code></pre>
+<p style="margin:12px 0 4px;font-weight:600;font-size:13px">Example response</p><pre style="border-radius:8px"><code>${esc(e.res)}</code></pre></div></div>`}).join(""):'<div class="none">No endpoints match.</div>';
+}
+function tog(i){const el=$("#ep"+i);el.classList.toggle("open");el.querySelector("button").setAttribute("aria-expanded",el.classList.contains("open"))}
+function tab(i,k,b){const el=$("#ep"+i);el.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));b.classList.add("on");$("#code"+i).textContent=ex(E[i])[k];el.dataset.k=k}
+function cp(i,b){const txt=$("#code"+i).textContent;try{navigator.clipboard.writeText(txt).then(()=>{b.textContent="Copied";setTimeout(()=>b.textContent="Copy",1200)},()=>{b.textContent="Select + copy"})}catch(e){b.textContent="Select + copy"}}
+$("#chips").innerHTML=groups.map(g=>`<button class="chip ${g==="All"?"on":""}" data-g="${g}">${g}</button>`).join("");
+$("#chips").onclick=e=>{const g=e.target.dataset.g;if(!g)return;grp=g;document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c.dataset.g===g));render()};
+$("#q").oninput=e=>{q=e.target.value;render()};
+const steps=['Create an application in the <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Discord Developer Portal</a>','Open the Bot tab, copy the token (keep it secret, never commit it) and enable any privileged intents you need',"Pick the permissions and scopes your bot needs","Invite the bot to a test server with an OAuth2 URL","Make your first call: GET /users/@me","Handle 429 responses using retry_after and the X-RateLimit headers"];
+$("#ck").innerHTML=steps.map((s,i)=>`<label class="ck"><input type="checkbox" data-i="${i}"><span>${s}</span></label>`).join("");
+$("#ck").onchange=()=>{const n=document.querySelectorAll("#ck input:checked").length;$("#pct").textContent=n+" of "+steps.length+" done";$("#fill").style.width=(n/steps.length*100)+"%"};
+const BOT=[`// npm install discord.js
+const { Client, Events, GatewayIntentBits } = require("discord.js");
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+client.once(Events.ClientReady, c => console.log("Logged in as " + c.user.tag));
+
+client.on(Events.InteractionCreate, async i => {
+  if (!i.isChatInputCommand() || i.commandName !== "ping") return;
+  await i.reply({ content: "pong", flags: 64 }); // 64 = ephemeral
+});
+
+client.login(process.env.BOT_TOKEN);
+// Register /ping first: see PUT .../commands in Endpoints`,
+`# pip install discord.py
+import os, discord
+from discord import app_commands
+
+client = discord.Client(intents=discord.Intents.default())
+tree = app_commands.CommandTree(client)
+
+@tree.command(name="ping", description="Replies with pong")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message("pong", ephemeral=True)
+
+@client.event
+async def on_ready():
+    await tree.sync()  # registers commands
+    print("Logged in as", client.user)
+
+client.run(os.environ["BOT_TOKEN"])`];
+function bt(i,b){b.parentNode.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));b.classList.add("on");$("#botcode").textContent=BOT[i]}
+$("#botcode").textContent=BOT[0];
+render();
+</script>
+</body>
+</html>
